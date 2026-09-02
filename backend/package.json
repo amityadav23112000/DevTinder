@@ -15,9 +15,12 @@
   "author": "amit yadav",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1124.0",
+    "@aws-sdk/s3-request-presigner": "^3.1124.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.16.3",

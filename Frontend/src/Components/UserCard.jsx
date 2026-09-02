@@ -1,8 +1,10 @@
-import { FaUser, FaEnvelope, FaTransgender } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaTransgender, FaTimes, FaHeart, FaBuilding, FaGraduationCap } from "react-icons/fa";
+import { useState } from "react";
 import { useDispatch } from "react-redux";
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
 import { removeUserFromFeed } from "../utils/feedSlice";
+import Avatar from "./Avatar";
 
 const UserCard = ({ user }) => {
   const {
@@ -15,40 +17,41 @@ const UserCard = ({ user }) => {
     age,
     about,
     gender,
+    organization,
+    education = [],
   } = user;
   const dispatch = useDispatch();
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSendRequest = async(status,user) => {
+    setSending(true);
+    setError("");
     try{
-    const res = await axios.post( BASE_URL +"/request/send/"+  status+"/"+ user._id,
+    await axios.post( BASE_URL +"/request/send/"+  status+"/"+ user._id,
       {},
       {
         withCredentials: true, // Include credentials for session management
       }
     );
     dispatch(removeUserFromFeed(user._id));
-    if(res.status === 200){
-      console.log("Request sent successfully");
-
-    }
   }
     catch(error){
-      console.error("Error sending request:", error);
+      setError(error.response?.data?.message || "Something went wrong. Please try again.");
+      setSending(false);
     }
 
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-base-200 border border-primary/40 rounded-2xl shadow-lg hover:shadow-primary/40 transition duration-300 p-6">
+    <div className="w-full max-w-lg mx-auto bg-base-200 border border-primary/40 rounded-2xl shadow-lg hover:shadow-primary/40 transition duration-300 p-8">
       {/* Profile Image */}
-      <div className="flex justify-center mb-4">
-        <img
-          src={
-            photoUrl ||
-            "https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
-          }
-          alt="User Profile"
-          className="w-28 h-28 rounded-full object-cover ring ring-primary ring-offset-base-100 ring-offset-2"
+      <div className="flex justify-center mb-6">
+        <Avatar
+          photoUrl={photoUrl}
+          gender={gender}
+          size="w-40 h-40"
+          className="ring-4 ring-primary ring-offset-base-100 ring-offset-4"
         />
       </div>
 
@@ -74,42 +77,62 @@ const UserCard = ({ user }) => {
             {email}
           </p>
         )}
+        {organization && (
+          <p>
+            <FaBuilding className="inline mr-1" />
+            {organization}
+          </p>
+        )}
       </div>
 
       {/* About */}
-      <p className="mt-3 text-sm text-center text-white/80 italic capitalize">
+      <p className="mt-4 text-base text-center text-white/80 italic capitalize">
         {about || "No description available."}
       </p>
 
+      {/* Education */}
+      {education.length > 0 && (
+        <p className="mt-2 text-center text-xs text-gray-400 flex items-center justify-center gap-2">
+          <FaGraduationCap className="shrink-0" />
+          {[education[0].degree, education[0].institution, education[0].year].filter(Boolean).join(" · ")}
+          {education.length > 1 && ` (+${education.length - 1} more)`}
+        </p>
+      )}
+
       {/* Skills */}
-      <div className="flex flex-wrap justify-center gap-2 mt-4">
+      <div className="flex flex-wrap justify-center gap-2 mt-6">
         {skills.length > 0 ? (
           skills.map((skill, idx) => (
             <span
               key={idx}
-              className="badge badge-outline badge-primary px-3 py-1 text-xs"
+              className="badge badge-primary badge-lg font-medium shadow-sm"
             >
               {skill}
             </span>
           ))
         ) : (
-          <span className="badge badge-ghost text-xs">No skills listed</span>
+          <span className="badge badge-ghost badge-lg">No skills listed</span>
         )}
       </div>
 
+      {/* Error */}
+      {error && <p className="mt-3 text-center text-error text-sm">{error}</p>}
+
       {/* Buttons */}
-      <div className="flex justify-between mt-6 gap-4">
+      <div className="flex justify-between mt-8 gap-4">
         <button
-          className="btn btn-outline btn-error w-1/2"
+          className="btn btn-outline btn-error btn-lg rounded-full w-1/2 gap-2 hover:scale-105 transition-transform"
+          disabled={sending}
           onClick={() =>handleSendRequest("ignore",user)}
         >
-          Ignore
+          <FaTimes /> Ignore
         </button>
         <button
-          className="btn btn-primary w-1/2"
+          className="btn btn-success btn-lg rounded-full w-1/2 gap-2 hover:scale-105 transition-transform"
+          disabled={sending}
           onClick={() => handleSendRequest("interested",user)}
         >
-          Interested
+          {sending ? <span className="loading loading-spinner loading-sm"></span> : <><FaHeart /> Interested</>}
         </button>
       </div>
     </div>
