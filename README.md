@@ -4,28 +4,28 @@ DevTinder is a MERN stack-based application that connects like-minded developers
 
 # Features 🎯
 
-✅ Sign up and log in securely (JWT, httpOnly cookies)
-✅ Feed displaying developer profiles, excluding anyone you've already interacted with
-✅ Mark profiles as Interested or Ignore
-✅ Connection requests are sent to Interested profiles
-✅ View and manage received connection requests (Accept/Reject)
-✅ Accepted requests appear in the Connections tab
-✅ Edit profile details — name, age, gender, about, skills, college/company, education history
-✅ Upload a profile photo — uploaded directly to a private S3 bucket via a presigned URL, served back via short-lived signed URLs
-✅ Add LinkedIn / GitHub / LeetCode / Codeforces links — only visible to your accepted connections
-✅ Gender-appropriate default avatar when no photo is uploaded
-✅ Securely sign out
-✅ **AI Profile Assistant** — turns rough free-text notes into a polished about/skills draft (Gemini via LangChain.js), reviewed and edited before saving
-✅ **AI Suggested Connections** — recommends developers by profile similarity (not just keyword overlap), using Gemini embeddings + MongoDB Atlas Vector Search, with a shared-skills-based explanation for each match
+- ✅ Sign up and log in securely (JWT, httpOnly cookies)
+- ✅ Feed displaying developer profiles, excluding anyone you've already interacted with
+- ✅ Mark profiles as Interested or Ignore
+- ✅ Connection requests are sent to Interested profiles
+- ✅ View and manage received connection requests (Accept/Reject)
+- ✅ Accepted requests appear in the Connections tab
+- ✅ Edit profile details — name, age, gender, about, skills, college/company, education history
+- ✅ Upload a profile photo — uploaded directly to a private S3 bucket via a presigned URL, served back via short-lived signed URLs
+- ✅ Add LinkedIn / GitHub / LeetCode / Codeforces links — only visible to your accepted connections
+- ✅ Gender-appropriate default avatar when no photo is uploaded
+- ✅ Securely sign out
+- ✅ **AI Profile Assistant** — turns rough free-text notes into a polished about/skills draft (Gemini via LangChain.js), reviewed and edited before saving
+- ✅ **AI Suggested Connections** — recommends developers by profile similarity (not just keyword overlap), using Gemini embeddings + MongoDB Atlas Vector Search, with a shared-skills-based explanation for each match
 
 # Tech Stack 🛠️
 
-**Frontend:** React 19, Vite, Redux Toolkit, React Router, Tailwind CSS + daisyUI, Axios
-**Backend:** Node.js, Express 5, Mongoose (routes → controllers → models/utils/ai)
-**Database:** MongoDB Atlas, with Atlas Vector Search for semantic matching
-**AI:** LangChain.js, Google Gemini API (chat + embeddings)
-**Authentication:** JWT + httpOnly cookies, bcrypt password hashing
-**File storage:** AWS S3 (private bucket, presigned upload/download URLs via `@aws-sdk/client-s3`)
+- **Frontend:** React 19, Vite, Redux Toolkit, React Router, Tailwind CSS + daisyUI, Axios
+- **Backend:** Node.js, Express 5, Mongoose (routes → controllers → models/utils/ai)
+- **Database:** MongoDB Atlas, with Atlas Vector Search for semantic matching
+- **AI:** LangChain.js, Google Gemini API (chat + embeddings)
+- **Authentication:** JWT + httpOnly cookies, bcrypt password hashing
+- **File storage:** AWS S3 (private bucket, presigned upload/download URLs via `@aws-sdk/client-s3`)
 
 # Project Structure
 
