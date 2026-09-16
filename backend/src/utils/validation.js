@@ -1,6 +1,7 @@
 const validator = require('validator');
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
+const { generateProfileEmbedding } = require('../ai/profileEmbedding');
 
 const validationSignUpData = (req) => {
   const { firstName, lastName, email, password } = req.body;
@@ -59,6 +60,27 @@ const profileEditValidation = async (req) => {
     if (!isValidOperation) {
       throw new Error("Invalid updates!");
     }
+    // If this edit touches any field the embedding is built from, regenerate
+    // it using the FULL updated profile — not just the fields in this one
+    // request — so it always reflects the user's complete, current profile.
+    const embeddingFields = ["about", "skills", "organization"];
+    const touchesEmbeddingFields = updates.some((field) => embeddingFields.includes(field));
+    if (touchesEmbeddingFields) {
+      const mergedProfile = {
+        about: data.about !== undefined ? data.about : req.user.about,
+        skills: data.skills !== undefined ? data.skills : req.user.skills,
+        organization: data.organization !== undefined ? data.organization : req.user.organization,
+      };
+      // Best-effort: if embedding generation fails (e.g. rate limited), the
+      // profile save should still go through — the embedding just stays
+      // as-is until the next successful edit.
+      try {
+        data.embedding = await generateProfileEmbedding(mergedProfile);
+      } catch (embeddingError) {
+        console.error("Embedding generation failed, saving profile without updating it:", embeddingError.message);
+      }
+    }
+
     // Apply the update to the allowed fields
     const user = await User.findByIdAndUpdate(_id, data, {
       new: true,

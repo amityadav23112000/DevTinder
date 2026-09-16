@@ -16,4 +16,3 @@ const feedSlice = createSlice({
 });
 export const { addFeed, removeUserFromFeed } = feedSlice.actions;
 export default feedSlice.reducer;
-// This code defines a Redux slice for managing feed-related state in a React application.

@@ -10,6 +10,7 @@ import UserCard from "./UserCard.jsx";
 import Profile from "./Profile.jsx";
 import EditProfile from "./EditProfile.jsx";
 import Connections from "./Connections.jsx";
+import Suggested from "./Suggested.jsx";
 
 
 
@@ -28,6 +29,7 @@ function App() {
         <Route path="/profile" element={<Profile/>} />
         <Route path="/edit-profile" element={<EditProfile/>} />
          <Route path="/connections" element={<Connections/>} />
+         <Route path="/suggested" element={<Suggested/>} />
           
        </Route>
     </Routes>

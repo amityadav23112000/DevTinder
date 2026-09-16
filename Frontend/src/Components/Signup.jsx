@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { BASE_URL } from '../utils/constants';
+import { FaUser, FaEnvelope, FaLock, FaCode } from 'react-icons/fa';
 
 const Signup = () => {
     const [firstName, setFirstName] = useState("");
@@ -9,11 +10,13 @@ const Signup = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSignup = async (e) => {
         e.preventDefault();
         setError("");
+        setLoading(true);
         try {
             await axios.post(
                 BASE_URL + '/signup',
@@ -25,32 +28,40 @@ const Signup = () => {
         catch (error) {
             setError(error.response?.data?.error || "Something went wrong. Please try again.");
         }
+        finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen">
-            <div className="card w-full max-w-sm shadow-xl bg-base-200 border border-primary/20">
-                <div className="card-body">
-                    <h2 className="card-title justify-center text-2xl text-base-content">Sign Up</h2>
+        <div className="min-h-[80vh] flex">
+            {/* Branding panel — hidden on mobile, form takes full width there */}
+            <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white flex-col items-center justify-center p-12 text-center">
+                <FaCode className="text-6xl mb-4" />
+                <h1 className="text-4xl font-extrabold tracking-tight">DevTinder</h1>
+                <p className="mt-3 text-white/90 max-w-xs">
+                    Join a community of developers building their next connection.
+                </p>
+            </div>
+
+            {/* Form panel */}
+            <div className="flex-1 flex items-center justify-center px-4 py-12 bg-base-100">
+                <div className="w-full max-w-sm">
+                    <h2 className="text-2xl font-bold text-center text-base-content mb-1">Create your account</h2>
+                    <p className="text-center text-sm text-gray-400 mb-6">Start connecting with developers</p>
 
                     <form className="flex flex-col gap-4" onSubmit={handleSignup}>
-                        <div>
-                            <label className="label">
-                                <span className="label-text text-base-content">First Name</span>
-                            </label>
-                            <input
-                                type="text"
-                                placeholder="First name"
-                                className="input input-bordered w-full"
-                                required
-                                value={firstName}
-                                onChange={(e) => setFirstName(e.target.value)}
-                            />
-                        </div>
-
-                        <div>
-                            <label className="label">
-                                <span className="label-text text-base-content">Last Name</span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <label className="input input-bordered flex items-center gap-2 w-full">
+                                <FaUser className="text-primary" />
+                                <input
+                                    type="text"
+                                    placeholder="First name"
+                                    className="grow"
+                                    required
+                                    value={firstName}
+                                    onChange={(e) => setFirstName(e.target.value)}
+                                />
                             </label>
                             <input
                                 type="text"
@@ -62,43 +73,47 @@ const Signup = () => {
                             />
                         </div>
 
-                        <div>
-                            <label className="label">
-                                <span className="label-text text-base-content">Email</span>
-                            </label>
+                        <label className="input input-bordered flex items-center gap-2 w-full">
+                            <FaEnvelope className="text-primary" />
                             <input
                                 type="email"
                                 placeholder="you@example.com"
-                                className="input input-bordered w-full"
+                                className="grow"
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
-                        </div>
+                        </label>
 
-                        <div>
-                            <label className="label">
-                                <span className="label-text text-base-content">Password</span>
-                            </label>
+                        <label className="input input-bordered flex items-center gap-2 w-full">
+                            <FaLock className="text-primary" />
                             <input
                                 type="password"
                                 placeholder="••••••••"
-                                className="input input-bordered w-full"
+                                className="grow"
                                 required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
-                        </div>
+                        </label>
 
                         {error && <p className="text-error text-sm">{error}</p>}
 
-                        <div className="card-actions mt-4">
-                            <button className="btn btn-primary w-full">Sign Up</button>
-                        </div>
+                        <button className="btn btn-primary w-full gap-2 mt-2" disabled={loading}>
+                            {loading ? <span className="loading loading-spinner loading-sm"></span> : "Sign Up"}
+                        </button>
                     </form>
+
+                    <p className="text-center text-sm text-gray-400 mt-6">
+                        Already have an account?{" "}
+                        <Link to="/login" className="text-primary font-medium hover:underline">
+                            Log in
+                        </Link>
+                    </p>
                 </div>
             </div>
         </div>
     );
-}
+};
+
 export default Signup;

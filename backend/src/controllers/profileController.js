@@ -4,6 +4,7 @@ const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { s3Client } = require("../config/s3");
 const { profileEditValidation } = require("../utils/validation");
 const { withSignedPhotoUrl } = require("../utils/photoUrl");
+const { generateProfileFromText } = require("../ai/profileAssistant");
 const User = require("../models/user");
 
 const ALLOWED_CONTENT_TYPES = {
@@ -84,4 +85,17 @@ const confirmPhotoUpload = async (req, res) => {
   }
 };
 
-module.exports = { viewProfile, editProfile, presignPhotoUpload, confirmPhotoUpload };
+// Takes the user's rough free-text notes and returns an AI-generated
+// about/skills draft. This does NOT save anything — the frontend shows the
+// result in the normal edit form for the user to review before saving.
+const generateProfile = async (req, res) => {
+  try {
+    const { rawText } = req.body;
+    const generated = await generateProfileFromText(rawText);
+    res.status(200).json(generated);
+  } catch (error) {
+    res.status(400).json({ message: "Error generating profile", error: error.message });
+  }
+};
+
+module.exports = { viewProfile, editProfile, presignPhotoUpload, confirmPhotoUpload, generateProfile };

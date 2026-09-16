@@ -117,6 +117,13 @@ const userSchema =  new mongoose.Schema({
         }
     }
   },
+  // Embedding vector for this user's profile (about + skills + organization),
+  // used for AI-based "who to connect with" matching. select:false — same as
+  // password — this is internal data, never meant to be sent to the client.
+  embedding: {
+    type: [Number],
+    select: false,
+  },
 },
 {
   timestamps: true, // This will add createdAt and updatedAt fields to the schema

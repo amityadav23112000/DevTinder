@@ -12,3 +12,11 @@ aqua ;
 .animate-card-in {
   animation: card-in 280ms ease-out;
 }
+
+@keyframes page-fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-page-fade {
+  animation: page-fade 220ms ease-out;
+}

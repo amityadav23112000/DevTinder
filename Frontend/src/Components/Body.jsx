@@ -1,4 +1,4 @@
-import {Outlet} from 'react-router-dom';
+import {Outlet, useLocation} from 'react-router-dom';
 import Navbar from './NavBar';
 import Footer  from './Footer';
 import { BASE_URL } from '../utils/constants';
@@ -13,16 +13,15 @@ const Body  =  ()=> {
      const dispatch = useDispatch();
      const navigate = useNavigate();
      const user = useSelector(store => store.user);
-    // This component serves as the main layout for the application,
+     const location = useLocation();
+    // Fetches the logged-in user once on mount so every page under this layout has it
     const fetchUser = async () => {
         if(user) return ;
-        // You can implement user fetching logic here if needed
         try{
         const user = await axios.get(BASE_URL + '/profile/view', {
             "withCredentials": true
         });
         dispatch(addUser(user.data));
-        console.log('User fetched:', user.data);
         }
         catch(error){
             if(error.status ===401)
@@ -39,7 +38,9 @@ const Body  =  ()=> {
        <>
        <div className="min-h-screen flex flex-col">
            <Navbar/>
-           <Outlet/>
+           <main key={location.pathname} className="flex-1 animate-page-fade">
+             <Outlet/>
+           </main>
            <Footer/>
        </div>
        </>

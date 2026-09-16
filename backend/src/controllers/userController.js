@@ -116,4 +116,75 @@ const getFeed = async (req, res) => {
   }
 };
 
-module.exports = { getReceivedRequests, getConnections, getFeed };
+// AI-suggested connections — ranks other developers by how semantically
+// similar their profile is to yours (via embeddings + Atlas Vector Search),
+// not just exact skill-keyword matches.
+const getRecommendations = async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+    const limit = 5;
+
+    // embedding is select:false, so fetch it explicitly
+    const me = await User.findById(loggedInUser._id).select("+embedding");
+    if (!me.embedding) {
+      return res.status(404).json({
+        message: "Add some skills and an about section to your profile first — that's what recommendations are based on.",
+      });
+    }
+
+    // Same "who to hide" logic as /feed — don't recommend people already interacted with
+    const connections = await ConnectionRequest.find({
+      $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
+    }).select("fromUserId toUserId");
+    const hideUserIds = new Set([loggedInUser._id.toString()]);
+    connections.forEach((connection) => {
+      hideUserIds.add(connection.fromUserId.toString());
+      hideUserIds.add(connection.toUserId.toString());
+    });
+
+    // Ask for more candidates than we need, since some will get filtered
+    // out by hideUserIds after the search runs.
+    const candidates = await User.aggregate([
+      {
+        $vectorSearch: {
+          index: "user_embedding_index",
+          path: "embedding",
+          queryVector: me.embedding,
+          numCandidates: 100,
+          limit: limit + hideUserIds.size,
+        },
+      },
+      {
+        $project: {
+          firstName: 1, lastName: 1, about: 1, skills: 1, organization: 1,
+          age: 1, gender: 1, photoUrl: 1, photoKey: 1,
+          score: { $meta: "vectorSearchScore" },
+        },
+      },
+    ]);
+
+    const matches = candidates
+      .filter((user) => !hideUserIds.has(user._id.toString()))
+      .slice(0, limit);
+
+    if (matches.length === 0) {
+      return res.status(404).json({ message: "No recommendations found right now" });
+    }
+
+    // Simple, honest "why" — based on skills actually shared with you,
+    // not something the AI makes up after the fact.
+    const withReasons = matches.map((match) => {
+      const sharedSkills = (match.skills || []).filter((skill) => me.skills?.includes(skill));
+      const reason = sharedSkills.length > 0
+        ? `Recommended because you both work with ${sharedSkills.slice(0, 2).join(" and ")}.`
+        : "Recommended based on similar experience and interests.";
+      return { ...match, matchScore: match.score, reason };
+    });
+
+    res.status(200).json({ data: await withSignedPhotoUrls(withReasons) });
+  } catch (error) {
+    res.status(400).json({ message: "Error fetching recommendations", error: error.message });
+  }
+};
+
+module.exports = { getReceivedRequests, getConnections, getFeed, getRecommendations };

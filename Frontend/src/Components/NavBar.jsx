@@ -5,11 +5,12 @@ import { useDispatch } from "react-redux";
 import { BASE_URL } from "../utils/constants";
 import { removeUser } from "../utils/userSlice";
 import { removeUserFromFeed } from "../utils/feedSlice";
-import { FaFire, FaUsers, FaUserCircle, FaUserEdit, FaSignOutAlt, FaBars } from "react-icons/fa";
+import { FaFire, FaUsers, FaUserCircle, FaUserEdit, FaSignOutAlt, FaBars, FaMagic } from "react-icons/fa";
 import Avatar from "./Avatar";
 
 const navLinks = [
   { to: "/feed", label: "Feed", icon: <FaFire /> },
+  { to: "/suggested", label: "Suggested", icon: <FaMagic /> },
   { to: "/connections", label: "Connections", icon: <FaUsers /> },
   { to: "/profile", label: "Profile", icon: <FaUserCircle /> },
   { to: "/edit-profile", label: "Edit Profile", icon: <FaUserEdit /> },

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FaSave, FaLinkedin, FaGithub, FaCamera, FaBuilding, FaGraduationCap, FaPlus, FaTrash } from 'react-icons/fa';
+import { FaSave, FaLinkedin, FaGithub, FaCamera, FaBuilding, FaGraduationCap, FaPlus, FaTrash, FaMagic } from 'react-icons/fa';
 import { SiLeetcode, SiCodeforces } from 'react-icons/si';
 import { BASE_URL } from '../utils/constants';
 import { addUser } from '../utils/userSlice';
@@ -10,6 +10,7 @@ import Avatar from './Avatar';
 const ABOUT_MAX_LENGTH = 500;
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const RAW_TEXT_MAX_LENGTH = 1000; // matches the backend's cap
 
 const EditProfile = () => {
   const user = useSelector((store) => store.user);
@@ -33,6 +34,9 @@ const EditProfile = () => {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState("");
+  const [rawText, setRawText] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState("");
 
   // Sync local form state once the logged-in user is available/updated
   useEffect(() => {
@@ -82,6 +86,29 @@ const EditProfile = () => {
       institution: row.institution.trim(),
       year: row.year ? Number(row.year) : undefined,
     }));
+
+  // Asks the backend to turn rough notes into an about/skills draft, then
+  // drops the result straight into the normal fields below — nothing is
+  // saved yet, the user still has to review and hit "Save Changes".
+  const handleGenerate = async () => {
+    setGenerateError("");
+    setGenerating(true);
+    try {
+      const res = await axios.post(
+        BASE_URL + "/profile/generate",
+        { rawText },
+        { withCredentials: true }
+      );
+      setAbout(res.data.about);
+      setSkillsInput(res.data.skills.join(", "));
+    }
+    catch (err) {
+      setGenerateError(err.response?.data?.error || "Couldn't generate a profile. Please try again.");
+    }
+    finally {
+      setGenerating(false);
+    }
+  };
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -189,7 +216,50 @@ const EditProfile = () => {
             <h2 className="card-title text-2xl text-base-content">Edit Profile</h2>
 
             <form className="flex flex-col gap-4" onSubmit={handleSave}>
-              <div className="grid grid-cols-2 gap-4">
+              {/* AI Assistant — fills About + Skills below from rough notes */}
+              <div className="bg-base-100 rounded-lg p-4 border border-primary/30">
+                <label className="label">
+                  <span className="label-text text-base-content flex items-center gap-2">
+                    <FaMagic className="text-primary" /> AI Profile Assistant
+                  </span>
+                </label>
+                <textarea
+                  className="textarea textarea-bordered w-full"
+                  rows={3}
+                  maxLength={RAW_TEXT_MAX_LENGTH}
+                  placeholder="e.g. I know Node.js, React, MongoDB and have built a RAG application."
+                  value={rawText}
+                  onChange={(e) => setRawText(e.target.value)}
+                />
+                <div className="flex items-center justify-between mt-2">
+                  <span className="text-xs text-gray-400">
+                    {rawText.length}/{RAW_TEXT_MAX_LENGTH}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm gap-2"
+                    disabled={generating || !rawText.trim()}
+                    onClick={handleGenerate}
+                  >
+                    {generating ? (
+                      <>
+                        <span className="loading loading-spinner loading-xs"></span>
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <FaMagic /> Generate with AI
+                      </>
+                    )}
+                  </button>
+                </div>
+                {generateError && <p className="text-error text-sm mt-2">{generateError}</p>}
+                <p className="text-xs text-gray-400 mt-2">
+                  This fills in About and Skills below — review and edit before saving.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="label">
                     <span className="label-text text-base-content">First Name</span>
@@ -215,7 +285,7 @@ const EditProfile = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="label">
                     <span className="label-text text-base-content">Age</span>
