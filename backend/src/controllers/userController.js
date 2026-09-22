@@ -126,7 +126,9 @@ const getRecommendations = async (req, res) => {
 
     // embedding is select:false, so fetch it explicitly
     const me = await User.findById(loggedInUser._id).select("+embedding");
-    if (!me.embedding) {
+    // Mongoose defaults array-type fields to [] (not undefined) when unset,
+    // so an empty-array check is required here, not just a falsy check.
+    if (!me.embedding || me.embedding.length === 0) {
       return res.status(404).json({
         message: "Add some skills and an about section to your profile first — that's what recommendations are based on.",
       });
